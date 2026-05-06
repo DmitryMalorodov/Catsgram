@@ -2,33 +2,45 @@ package ru.yandex.practicum.catsgram.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.catsgram.enums.SortOrder;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.Post;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PostService {
     private final UserService userService;
     private final Map<Long, Post> posts = new HashMap<>();
+    private final Comparator<Post> dateComparator = Comparator.comparing(Post::getPostDate);
 
     @Autowired
     public PostService(UserService userService) {
         this.userService = userService;
     }
 
-    public Collection<Post> findAll() {
-        return posts.values();
+    public Collection<Post> findAll(int from, int size, SortOrder sort) {
+        return posts.values().stream()
+                .sorted(sort.equals(SortOrder.ASCENDING) ? dateComparator : dateComparator.reversed())
+                .skip(from)
+                .limit(size)
+                .toList();
+    }
+
+    public Post findById(Long id) {
+        Post post = posts.get(id);
+        if (post != null) {
+            return post;
+        } else {
+            throw new NotFoundException(String.format("Пост с id = <%d> не найден", id));
+        }
     }
 
     public Post create(Post post) {
         if (userService.findUserById(post.getAuthorId()).isEmpty()) {
-            throw new ConditionsNotMetException(String.format("«Автор с id = <%d> не найден»", post.getAuthorId()));
+            throw new ConditionsNotMetException(String.format("Автор с id = <%d> не найден", post.getAuthorId()));
         }
 
         if (post.getDescription() == null || post.getDescription().isBlank()) {
