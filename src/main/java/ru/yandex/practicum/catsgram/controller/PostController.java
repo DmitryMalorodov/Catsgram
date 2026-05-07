@@ -1,6 +1,6 @@
 package ru.yandex.practicum.catsgram.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.catsgram.enums.SortOrder;
@@ -10,14 +10,10 @@ import ru.yandex.practicum.catsgram.service.PostService;
 import java.util.Collection;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/posts")
 public class PostController {
     private final PostService postService;
-
-    @Autowired
-    public PostController(PostService postService) {
-        this.postService = postService;
-    }
 
     @GetMapping
     public Collection<Post> findAll(
