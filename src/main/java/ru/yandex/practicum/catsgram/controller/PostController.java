@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.catsgram.enums.SortOrder;
+import ru.yandex.practicum.catsgram.exception.ParameterNotValidException;
 import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.service.PostService;
 
@@ -20,7 +21,18 @@ public class PostController {
             @RequestParam(defaultValue = "0") int from,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "desc") String sort) {
-        return postService.findAll(from, size, SortOrder.from(sort));
+        SortOrder sortOrder = SortOrder.from(sort);
+        if (size <= 0) {
+            throw new ParameterNotValidException("size", "Некорректный размер выборки. Размер должен быть больше нуля");
+        }
+        if (from < 0) {
+            throw new ParameterNotValidException("from", "Некорректный номер начала выборки. Номер должен быть равен или больше нуля");
+        }
+        if (sortOrder == null) {
+            throw new ParameterNotValidException("sort", "Некорректный параметр сортировки. Параметр должен быть одним из - " +
+                    SortOrder.getAllNames());
+        }
+        return postService.findAll(from, size, sortOrder);
     }
 
     @GetMapping("/{id}")
