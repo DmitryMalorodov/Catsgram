@@ -3,9 +3,11 @@ package ru.yandex.practicum.catsgram.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.catsgram.dto.post.NewPostRequest;
+import ru.yandex.practicum.catsgram.dto.post.PostDto;
+import ru.yandex.practicum.catsgram.dto.post.UpdatePostRequest;
 import ru.yandex.practicum.catsgram.enums.SortOrder;
 import ru.yandex.practicum.catsgram.exception.ParameterNotValidException;
-import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.service.PostService;
 
 import java.util.Collection;
@@ -16,8 +18,25 @@ import java.util.Collection;
 public class PostController {
     private final PostService postService;
 
+    @GetMapping("/{postId}")
+    @ResponseStatus(HttpStatus.OK)
+    public PostDto getPostById(@PathVariable("postId") long postId) {
+        return postService.getPostById(postId);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public PostDto createPost(@RequestBody NewPostRequest postRequest) {
+        return postService.createPost(postRequest);
+    }
+
+    @PutMapping("/{postId}")
+    public PostDto updatePost(@PathVariable("postId") long postId, @RequestBody UpdatePostRequest request) {
+        return postService.updatePost(postId, request);
+    }
+
     @GetMapping
-    public Collection<Post> findAll(
+    public Collection<PostDto> findAll(
             @RequestParam(defaultValue = "0") int from,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "desc") String sort) {
@@ -32,22 +51,6 @@ public class PostController {
             throw new ParameterNotValidException("sort", "Некорректный параметр сортировки. Параметр должен быть одним из - " +
                     SortOrder.getAllNames());
         }
-        return postService.findAll(from, size, sortOrder);
-    }
-
-    @GetMapping("/{id}")
-    public Post findById(@PathVariable Long id) {
-        return postService.findById(id);
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Post create(@RequestBody Post post) {
-        return postService.create(post);
-    }
-
-    @PutMapping
-    public Post update(@RequestBody Post newPost) {
-        return postService.update(newPost);
+        return postService.getPosts(from, size, sortOrder);
     }
 }
