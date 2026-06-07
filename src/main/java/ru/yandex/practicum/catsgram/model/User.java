@@ -5,10 +5,7 @@ import lombok.*;
 import java.time.Instant;
 
 @Data
-@Getter
-@Setter
 @EqualsAndHashCode(of = { "email" })
-@ToString
 public class User {
     private Long id;
     private String username;
